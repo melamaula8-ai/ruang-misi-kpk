@@ -94,11 +94,11 @@ export const MissionDetailView: React.FC<Props> = ({
     startMissionTimer();
   }, [startMissionTimer]);
 
-  // Auto-redirect to presentation when time expires (Section B3)
+  // Auto-redirect to results when time expires (Section B3)
   useEffect(() => {
     if (hasTimeExpired) {
       const timer = setTimeout(() => {
-        onNavigate('presentasi');
+        onNavigate('evaluasi');
       }, 3500);
       return () => clearTimeout(timer);
     }

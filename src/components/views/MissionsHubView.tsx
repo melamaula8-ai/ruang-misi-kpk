@@ -5,7 +5,6 @@ import {
   Clock,
   PlayCircle,
   Award,
-  Presentation,
   Timer,
   Lock,
   Sparkles,
@@ -140,14 +139,14 @@ export const MissionsHubView: React.FC<Props> = ({ onNavigate, onSelectMission }
   const handleProceedToPresentation = () => {
     if (!allCasesCompleted) return;
     soundManager.playNextStep();
-    onNavigate('presentasi');
+    onNavigate('evaluasi');
   };
 
   // Auto-redirect to presentation when time expires (Section B3)
   React.useEffect(() => {
     if (hasTimeExpired) {
       const timer = setTimeout(() => {
-        onNavigate('presentasi');
+        onNavigate('evaluasi');
       }, 3500);
       return () => clearTimeout(timer);
     }
@@ -161,18 +160,18 @@ export const MissionsHubView: React.FC<Props> = ({ onNavigate, onSelectMission }
           <div className="flex items-center gap-3">
             <Clock className="w-6 h-6 text-[#FF913D] shrink-0" />
             <div className="text-xs sm:text-sm">
-              <strong>Waktu Pengerjaan 25 Menit Telah Selesai.</strong> Seluruh jawaban kelompok telah otomatis disimpan dan dikirim ke sistem data guru. Mengarahkan ke bahan presentasi...
+              <strong>Waktu Pengerjaan 25 Menit Telah Selesai.</strong> Seluruh jawaban kelompok telah otomatis disimpan dan dikirim ke sistem data guru. Mengarahkan ke hasil kelompok...
             </div>
           </div>
           <button
             type="button"
             onClick={() => {
               soundManager.playClick();
-              onNavigate('presentasi');
+              onNavigate('evaluasi');
             }}
             className="px-4 py-2 bg-[#FF913D] hover:bg-[#F2822B] text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
           >
-            Buka Bahan Presentasi &rarr;
+            Lihat Hasil Kelompok &rarr;
           </button>
         </div>
       )}
@@ -194,7 +193,7 @@ export const MissionsHubView: React.FC<Props> = ({ onNavigate, onSelectMission }
               Pilih Kasus yang Ingin Dikerjakan
             </h1>
             <p className="text-xs sm:text-sm text-[#6D5A50]">
-              Kelompokmu bebas memilih kasus mana dulu yang ingin diselesaikan. Selesaikan keempat kasus untuk membuka bahan presentasi.
+              Kelompokmu bebas memilih kasus mana dulu yang ingin diselesaikan. Selesaikan keempat kasus untuk melihat hasil kelompok.
             </p>
           </div>
 
@@ -303,7 +302,7 @@ export const MissionsHubView: React.FC<Props> = ({ onNavigate, onSelectMission }
         })}
       </div>
 
-      {/* Footer navigation towards Presentation (LOCKED until all 4 cases are complete) */}
+      {/* Footer navigation to Results (locked until all 4 cases are complete) */}
       <div className="bg-white border border-[#EAE3D9] rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="space-y-1 text-xs text-[#6D5A50] text-center sm:text-left">
           <div className="flex items-center gap-1.5 font-bold text-[#3E2723]">
@@ -312,12 +311,12 @@ export const MissionsHubView: React.FC<Props> = ({ onNavigate, onSelectMission }
             ) : (
               <Lock className="w-4 h-4 text-[#FF913D]" />
             )}
-            <span>Syarat Membuka Bahan Presentasi:</span>
+            <span>Syarat Membuka Hasil Kelompok:</span>
           </div>
           <p>
             {allCasesCompleted
-              ? 'Selamat! Seluruh 4 kasus telah selesai dikerjakan. Bahan presentasi otomatis siap dipaparkan.'
-              : `Kelompokmu telah menyelesaikan ${completeCount} dari 4 kasus. Selesaikan seluruh 4 kasus untuk membuka tahap presentasi.`}
+              ? 'Selamat! Seluruh 4 kasus telah selesai dikerjakan. Hasil kelompok kini dapat dilihat.'
+              : `Kelompokmu telah menyelesaikan ${completeCount} dari 4 kasus. Selesaikan seluruh 4 kasus untuk melihat hasil kelompok.`}
           </p>
         </div>
 
@@ -330,8 +329,8 @@ export const MissionsHubView: React.FC<Props> = ({ onNavigate, onSelectMission }
               : 'bg-[#EAE3D9] text-[#8C7A70] cursor-not-allowed opacity-75'
           }`}
         >
-          <Presentation className="w-4 h-4" />
-          <span>{allCasesCompleted ? 'Buka Bahan Presentasi' : `Terkunci (${completeCount}/4 Kasus Selesai)`}</span>
+          <Award className="w-4 h-4" />
+          <span>{allCasesCompleted ? 'Lihat Hasil Kelompok' : `Terkunci (${completeCount}/4 Kasus Selesai)`}</span>
         </button>
       </div>
 
@@ -341,7 +340,7 @@ export const MissionsHubView: React.FC<Props> = ({ onNavigate, onSelectMission }
         teamName={activeSubmission.team.teamName}
         onProceedToPresentation={() => {
           setCelebrationOpen(false);
-          onNavigate('presentasi');
+          onNavigate('evaluasi');
         }}
         onClose={() => setCelebrationOpen(false)}
       />

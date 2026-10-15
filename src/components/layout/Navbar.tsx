@@ -38,8 +38,6 @@ export const Navbar: React.FC<Props> = ({ currentView, onNavigate, onOpenTeacher
     { id: 'identitas', label: 'Identitas Tim', icon: Users },
     { id: 'misi', label: '4 Kasus', icon: Sparkles },
     { id: 'latihan', label: 'Latihan Mandiri', icon: Dumbbell },
-    { id: 'presentasi', label: 'Presentasi', icon: Presentation },
-    { id: 'refleksi', label: 'Refleksi', icon: Sparkles },
     { id: 'evaluasi', label: 'Hasil', icon: Award },
   ];
 

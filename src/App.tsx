@@ -8,8 +8,6 @@ import { TeamIdentityView } from './components/views/TeamIdentityView';
 import { MissionsHubView } from './components/views/MissionsHubView';
 import { MissionDetailView } from './components/views/MissionDetailView';
 import { PracticeQuestionsView } from './components/views/PracticeQuestionsView';
-import { PresentationView } from './components/views/PresentationView';
-import { ReflectionView } from './components/views/ReflectionView';
 import { ResultsEvaluationView } from './components/views/ResultsEvaluationView';
 import { TeacherDashboardView } from './components/views/TeacherDashboardView';
 import { TeacherLoginModal } from './components/modals/TeacherLoginModal';
@@ -33,9 +31,9 @@ function MainApp() {
   const [identityValidationAttempt, setIdentityValidationAttempt] = useState(0);
 
   // Halaman yang hanya boleh dibuka siswa yang sudah memverifikasi ID Kelompok.
-  const STUDENT_SESSION_VIEWS = ['pintu', 'identitas', 'misi', 'misi-detail', 'presentasi', 'refleksi'];
+  const STUDENT_SESSION_VIEWS = ['pintu', 'identitas', 'misi', 'misi-detail'];
   // Halaman kelanjutan misi: identitas kelompok wajib lengkap lebih dulu.
-  const IDENTITY_REQUIRED_VIEWS = ['misi', 'misi-detail', 'presentasi', 'refleksi'];
+  const IDENTITY_REQUIRED_VIEWS = ['misi', 'misi-detail'];
 
   useEffect(() => {
     if (
@@ -53,12 +51,10 @@ function MainApp() {
 
   // Penjaga terakhir: apa pun jalur masuknya (menu, tombol, sinkronisasi dari perangkat lain),
   // siswa tidak bisa berada di halaman misi bila identitas kelompok belum lengkap.
-  // Setelah waktu habis / dikirim, halaman presentasi dan refleksi tetap bisa dibuka.
+  // Akses halaman misi tetap memerlukan identitas kelompok yang lengkap.
   useEffect(() => {
     if (isTeacherLoggedIn || !hasVerifiedGroupToken) return;
     if (!IDENTITY_REQUIRED_VIEWS.includes(currentView)) return;
-    const isFinished = hasTimeExpired || activeSubmission.status !== 'in_progress';
-    if (['presentasi', 'refleksi'].includes(currentView) && isFinished) return;
     if (!isTeamIdentityComplete(activeSubmission.team)) {
       setCurrentView('identitas');
       setIdentityValidationAttempt((attempt) => attempt + 1);
@@ -90,27 +86,15 @@ function MainApp() {
       setIsGroupIdModalOpen(true);
       return;
     }
-    // Presentasi & refleksi adalah kelanjutan misi: siswa juga harus sudah memverifikasi ID Kelompok.
-    // (Guru tetap bisa membukanya untuk melihat/menilai tanpa ID.)
-    if (['presentasi', 'refleksi'].includes(view) && !isTeacherLoggedIn && !hasVerifiedGroupToken) {
-      setIsGroupIdModalOpen(true);
+    // Rute lama Presentasi dan Refleksi diarahkan ke halaman Hasil.
+    if (view === 'presentasi' || view === 'refleksi') {
+      setCurrentView('evaluasi');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
     if (
       ['misi', 'misi-detail'].includes(view) &&
-      !identityValidated &&
-      !isTeamIdentityComplete(activeSubmission.team)
-    ) {
-      returnToIncompleteIdentity();
-      return;
-    }
-    // Sebelum misi selesai/dikirim, presentasi & refleksi juga menunggu identitas lengkap.
-    const sessionFinished = hasTimeExpired || activeSubmission.status !== 'in_progress';
-    if (
-      ['presentasi', 'refleksi'].includes(view) &&
-      !isTeacherLoggedIn &&
-      !sessionFinished &&
       !identityValidated &&
       !isTeamIdentityComplete(activeSubmission.team)
     ) {
@@ -189,8 +173,8 @@ function MainApp() {
         {currentView === 'latihan' && (
           <PracticeQuestionsView onNavigate={handleNavigate} />
         )}
-        {currentView === 'presentasi' && <PresentationView onNavigate={handleNavigate} />}
-        {currentView === 'refleksi' && <ReflectionView onNavigate={handleNavigate} />}
+
+
         {currentView === 'evaluasi' && <ResultsEvaluationView onNavigate={handleNavigate} />}
         {currentView === 'dashboard-guru' && (
           <TeacherDashboardView onNavigate={handleNavigate} />

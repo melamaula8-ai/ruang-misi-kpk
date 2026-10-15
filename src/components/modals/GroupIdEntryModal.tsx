@@ -16,6 +16,7 @@ export const GroupIdEntryModal: React.FC<Props> = ({ isOpen, onClose, onSuccess 
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generatedCode, setGeneratedCode] = useState('');
+  const displayedCode = generatedCode || activeGroupToken?.code || '';
   const [isCreating, setIsCreating] = useState(false);
   const [copyMsg, setCopyMsg] = useState('');
 
@@ -142,14 +143,14 @@ export const GroupIdEntryModal: React.FC<Props> = ({ isOpen, onClose, onSuccess 
           </div>
         )}
 
-        {generatedCode && (
+        {displayedCode && (
           <div className="p-4 rounded-2xl border-2 border-[#A8D468] bg-[#F4F9E9] space-y-3">
             <div>
               <span className="block text-xs font-bold text-[#4A671E]">
-                ID KELOMPOK BERHASIL DIBUAT
+                Kalau sudah digenerate, ID token kelompokmu adalah:
               </span>
               <p className="mt-2 font-mono text-2xl font-extrabold tracking-widest text-[#3E2723] break-words">
-                {generatedCode}
+                {displayedCode}
               </p>
             </div>
             <button

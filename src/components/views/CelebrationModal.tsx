@@ -80,7 +80,7 @@ export const CelebrationModal: React.FC<Props> = ({
             }}
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-[#FF913D] hover:bg-[#F2822B] text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
           >
-            <span>Buka Bahan Presentasi Kelompok</span>
+            <span>Lihat Hasil Kelompok</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>

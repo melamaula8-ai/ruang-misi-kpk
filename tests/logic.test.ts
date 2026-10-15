@@ -1,8 +1,8 @@
-import { test } from 'node:test';
+﻿import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { getTeamIdentityValidationErrors, isTeamIdentityComplete } from '/home/claude/proj/src/utils/teamIdentity';
-import { INITIAL_QUESTION_BANK, migrateInnovatorProblemAnalysis, migrateInnovatorProblemAnswers } from '/home/claude/proj/src/data/questionBank';
-import { calculateLCM, addDaysToDate } from '/home/claude/proj/src/utils/math';
+import { getTeamIdentityValidationErrors, isTeamIdentityComplete } from '../src/utils/teamIdentity';
+import { INITIAL_QUESTION_BANK, migrateInnovatorProblemAnalysis, migrateInnovatorProblemAnswers } from '../src/data/questionBank';
+import { calculateLCM, addDaysToDate } from '../src/utils/math';
 
 const team = (o: any = {}) => ({ teamName: 'Tim A', schoolName: 'SDN 1', agreement: '', members: [{name:'a',role:'r'},{name:'b',role:'r'},{name:'c',role:'r'}], ...o });
 

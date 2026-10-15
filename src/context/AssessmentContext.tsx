@@ -30,6 +30,7 @@ interface AssessmentContextType {
   activeGroupToken: GroupToken | null;
   hasVerifiedGroupToken: boolean;
   createGroupTokens: (quantity: number, customPrefix?: string) => GroupToken[];
+  createStudentGroupToken: () => Promise<{ success: boolean; message: string; code?: string }>;
   toggleGroupTokenStatus: (id: string, newStatus: GroupTokenStatus) => void;
   deleteGroupToken: (id: string) => { success: boolean; message: string };
   replaceGroupToken: (id: string) => GroupToken;
@@ -692,6 +693,78 @@ export const AssessmentProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     return newTokens;
   };
 
+  const createStudentGroupToken = async (): Promise<{ success: boolean; message: string; code?: string }> => {
+    try {
+      const response = await fetch('/api/group-token', {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        cache: 'no-store',
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success || !result.token) {
+        return {
+          success: false,
+          message: result.error || 'ID Kelompok gagal dibuat. Silakan coba lagi.',
+        };
+      }
+
+      const serverToken = result.token as GroupToken;
+      const token: GroupToken = {
+        ...serverToken,
+        status: 'claimed',
+        claimedAt: new Date().toISOString(),
+        claimedBySubmissionId: activeSubmission.id,
+        teamName: activeSubmission.team?.teamName || '',
+      };
+
+      setGroupTokens((prev) => {
+        const exists = prev.some(
+          (item) =>
+            item.id === token.id ||
+            item.code.toUpperCase() === token.code.toUpperCase()
+        );
+
+        if (exists) {
+          return prev.map((item) =>
+            item.id === token.id ||
+            item.code.toUpperCase() === token.code.toUpperCase()
+              ? { ...item, ...token }
+              : item
+          );
+        }
+
+        return [...prev, token];
+      });
+
+      setAllSubmissions((prev) =>
+        prev.map((submission) =>
+          submission.id === activeSubmission.id
+            ? {
+                ...submission,
+                groupId: token.id,
+                groupCode: token.code,
+              }
+            : submission
+        )
+      );
+
+      setActiveTokenCode(token.code);
+
+      return {
+        success: true,
+        message: 'ID Kelompok berhasil dibuat dan sesi kelompok siap digunakan.',
+        code: token.code,
+      };
+    } catch (error) {
+      console.error('[Ruang Misi KPK] Gagal membuat ID kelompok:', error);
+      return {
+        success: false,
+        message: 'Tidak dapat terhubung ke server. Periksa koneksi internet lalu coba lagi.',
+      };
+    }
+  };
   const toggleGroupTokenStatus = (id: string, newStatus: GroupTokenStatus) => {
     setGroupTokens((prev) =>
       prev.map((tok) => {
@@ -751,11 +824,49 @@ export const AssessmentProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       return { success: false, message: 'Harap masukkan ID Kelompok yang diberikan guru.' };
     }
 
-    const token = groupTokens.find((t) => t.code.toUpperCase() === code);
+    let token = groupTokens.find((t) => t.code.toUpperCase() === code);
+
+    if (!token) {
+      try {
+        const response = await fetch(
+          `/api/sync?groupCode=${encodeURIComponent(code)}`,
+          {
+            headers: { Accept: 'application/json' },
+            cache: 'no-store',
+          }
+        );
+
+        if (response.ok) {
+          const remote = await response.json();
+          const remoteToken = Array.isArray(remote.tokens)
+            ? remote.tokens.find(
+                (item: GroupToken) => item.code?.toUpperCase() === code
+              )
+            : null;
+
+          if (remoteToken) {
+            token = remoteToken as GroupToken;
+            const foundToken = token;
+
+            setGroupTokens((prev) =>
+              prev.some((item) => item.code.toUpperCase() === code)
+                ? prev
+                : [...prev, foundToken]
+            );
+          }
+        }
+      } catch (error) {
+        console.error(
+          '[Ruang Misi KPK] Pencarian ID dari server gagal:',
+          error
+        );
+      }
+    }
+
     if (!token) {
       return {
         success: false,
-        message: 'ID Kelompok tidak terdaftar. Pastikan kode yang dimasukkan tepat (contoh: KPK-4A-82).',
+        message: 'ID Kelompok tidak ditemukan. Periksa kode dan koneksi internet, lalu coba lagi.',
       };
     }
 
@@ -1498,6 +1609,7 @@ export const AssessmentProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         activeGroupToken,
         hasVerifiedGroupToken,
         createGroupTokens,
+        createStudentGroupToken,
         toggleGroupTokenStatus,
         deleteGroupToken,
         replaceGroupToken,

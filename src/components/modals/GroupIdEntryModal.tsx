@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { KeyRound, CheckCircle2, AlertCircle, ArrowRight, ShieldCheck, X } from 'lucide-react';
+import { KeyRound, CheckCircle2, AlertCircle, ArrowRight, ShieldCheck, X, Copy } from 'lucide-react';
 import { useAssessment } from '../../context/AssessmentContext';
 import { soundManager } from '../../utils/sound';
 
@@ -10,11 +10,51 @@ interface Props {
 }
 
 export const GroupIdEntryModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
-  const { verifyAndClaimGroupToken, activeGroupToken } = useAssessment();
+  const { verifyAndClaimGroupToken, createStudentGroupToken, activeGroupToken } = useAssessment();
   const [tokenInput, setTokenInput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+  const [copyMsg, setCopyMsg] = useState('');
+
+  const handleCreateGroupId = async () => {
+    setErrorMsg('');
+    setSuccessMsg('');
+    setGeneratedCode('');
+    setCopyMsg('');
+    setIsCreating(true);
+
+    try {
+      const result = await createStudentGroupToken();
+
+      if (result.success && result.code) {
+        setGeneratedCode(result.code);
+        setSuccessMsg(result.message);
+        soundManager.playNextStep();
+      } else {
+        setErrorMsg(result.message);
+        soundManager.playClick();
+      }
+    } catch (error) {
+      console.error('[Ruang Misi KPK] Pembuatan ID gagal:', error);
+      setErrorMsg('ID gagal dibuat. Periksa koneksi internet lalu coba lagi.');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleCopyGeneratedCode = async () => {
+    if (!generatedCode) return;
+
+    try {
+      await navigator.clipboard.writeText(generatedCode);
+      setCopyMsg('ID berhasil disalin. Bagikan kepada anggota kelompok.');
+    } catch {
+      setCopyMsg('Salin kode berikut secara manual: ' + generatedCode);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -102,6 +142,32 @@ export const GroupIdEntryModal: React.FC<Props> = ({ isOpen, onClose, onSuccess 
           </div>
         )}
 
+        {generatedCode && (
+          <div className="p-4 rounded-2xl border-2 border-[#A8D468] bg-[#F4F9E9] space-y-3">
+            <div>
+              <span className="block text-xs font-bold text-[#4A671E]">
+                ID KELOMPOK BERHASIL DIBUAT
+              </span>
+              <p className="mt-2 font-mono text-2xl font-extrabold tracking-widest text-[#3E2723] break-words">
+                {generatedCode}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleCopyGeneratedCode}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#4A671E] hover:bg-[#3D5718] text-white text-sm font-bold rounded-xl transition-colors cursor-pointer"
+            >
+              <Copy className="w-4 h-4" />
+              Salin ID Kelompok
+            </button>
+            {copyMsg && (
+              <p className="text-xs text-[#4A671E] font-medium">{copyMsg}</p>
+            )}
+            <p className="text-xs text-[#5D4E46] leading-relaxed">
+              Simpan kode ini dan bagikan kepada anggota kelompok. Anggota perlu memasukkan kode yang sama pada perangkat masing-masing.
+            </p>
+          </div>
+        )}
         {/* Feedback Messages */}
         {errorMsg && (
           <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium animate-in fade-in">
@@ -145,6 +211,15 @@ export const GroupIdEntryModal: React.FC<Props> = ({ isOpen, onClose, onSuccess 
 
           </div>
 
+          <button
+            type="button"
+            onClick={handleCreateGroupId}
+            disabled={isCreating || isSubmitting}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#FFF3E6] hover:bg-[#FFE5CC] disabled:opacity-50 text-[#8A481C] text-sm font-bold rounded-xl border-2 border-[#FFD0A3] transition-colors cursor-pointer"
+          >
+            <KeyRound className="w-4 h-4" />
+            {isCreating ? 'Membuat ID Kelompok...' : 'Buat ID Kelompok'}
+          </button>
           <div className="pt-2 flex items-center justify-end gap-3">
             <button
               type="button"

@@ -1,0 +1,9 @@
+name = "ruang-misi-kpk"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ruang-misi-kpk"
+database_id = "865f0da1-273a-4285-ac43-d2b4de2a42a6"
+migrations_dir = "migrations"

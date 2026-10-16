@@ -163,7 +163,7 @@ async function handleGet(request: Request, env: Env, teacher: boolean): Promise<
     const { evaluation: _e, reviewedAt: _r, publishedAt: _p, ...rest } = s;
     return rest;
   });
-  const publicTokens = tokens.map((d: any) => ({ id: d.id, code: d.code, status: d.status, createdAt: d.createdAt }));
+  const publicTokens = groupCode ? tokens.filter((d: any) => upper(d.code) === groupCode).map((d: any) => ({ id: d.id, code: d.code, status: d.status, createdAt: d.createdAt })) : [];
   const publicSettings: Record<string, unknown> = {};
   for (const key of PUBLIC_SETTINGS) if (key in settings) publicSettings[key] = settings[key];
   const body: Record<string, unknown> = {
